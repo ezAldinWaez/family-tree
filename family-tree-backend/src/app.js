@@ -1,9 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-require("dotenv").config();
 const personRoutes = require("./routes/personRoutes");
 const relationshipRoutes = require("./routes/relationshipRoutes");
+
+require("dotenv").config();
 
 const app = express();
 
