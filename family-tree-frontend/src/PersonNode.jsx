@@ -25,6 +25,19 @@ const PersonNode = ({ data }) => {
         }}
       />
 
+      <p
+        style={{
+          position: 'absolute',
+          bottom: '-55px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: '12px',
+        }}
+      
+      >
+        {data.name}
+      </p>
+
       {/* Add handles for connecting edges */}
       <Handle
         type="source"

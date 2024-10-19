@@ -15,18 +15,18 @@ const RelationNode = ({ data }) => {
         color: '#ff559d '
       }}
     >
-        <FontAwesomeIcon icon={data.isContinuance ? faHeart : faHeartCrack} size="2x" />
+        <FontAwesomeIcon icon={data.isContinuance ? faHeart : faHeartCrack}  />
 
       {/* Add handles for connecting edges */}
       <Handle
         type="source"
         position="bottom"
-        style={{ background: '#555', bottom: '-8px', left: 'calc(50% + 7px)', borderRadius: '50%' }}
+        style={{ background: '#555', left: '0px', top: 'calc(50% - 7px)', borderRadius: '50%' }}
       />
       <Handle
         type="target"
         position="top"
-        style={{ background: '#555', top: '0px', left: 'calc(50% + 7px)', borderRadius: '50%' }}
+        style={{ background: '#555', right: '-10px', top: 'calc(50%)', borderRadius: '50%' }}
       />
     </div>
   );
