@@ -9,9 +9,7 @@ const relationshipSchema = new mongoose.Schema({
     default: "married",
   },
   marriageStartDate: { type: Date },
-  marriageStartPlace: { type: String },
   marriageEndDate: { type: Date },
-  marriageEndPlace: { type: String },
   children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Person" }],
 }, { timestamps: true });
 

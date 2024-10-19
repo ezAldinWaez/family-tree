@@ -32,8 +32,8 @@ router.get("/:id", async (req, res) => {
 
 // Create a new person
 router.post("/", validateFullName, validateSex, validateAge, async (req, res) => {
-  const person = new Person(req.body);
   try {
+    const person = new Person(req.body);
     const newPerson = await person.save();
     res.status(201).json(newPerson);
   } catch (err) {
@@ -53,7 +53,7 @@ router.put("/:id", validateFullName, validateSex, validateAge, async (req, res) 
       return res.status(404).json({ message: "Person not found" });
     res.json(updatedPerson);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ message: err.message }); // ? Why 400 and not 500 error message?
   }
 });
 
