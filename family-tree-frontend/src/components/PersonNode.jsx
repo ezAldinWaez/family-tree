@@ -1,6 +1,9 @@
 import React from 'react';
 import { Handle } from '@xyflow/react';
 
+import man from '../assets/imgs/man.jpg';
+import woman from '../assets/imgs/woman.jpg';
+
 const PersonNode = ({ data }) => {
   return (
     <div
@@ -15,7 +18,7 @@ const PersonNode = ({ data }) => {
       }}
     >
       <img
-        src={data.img}
+        src={data.sex == 'male' ? man : woman}
         alt={data.label}
         style={{
           width: '100%',
@@ -40,14 +43,14 @@ const PersonNode = ({ data }) => {
 
       {/* Add handles for connecting edges */}
       <Handle
-        type="source"
-        position="bottom"
-        style={{ background: '#555', bottom: '-8px', left: '50%', borderRadius: '50%' }}
-      />
-      <Handle
         type="target"
         position="top"
-        style={{ background: '#555', top: '-8px', left: '50%', borderRadius: '50%' }}
+        style={{ visibility: 'hidden', }}
+      />
+      <Handle
+        type="source"
+        position=  {`${data.sex === 'male'? 'right' : 'left'}`}
+        style={{ visibility: 'hidden', }}
       />
     </div>
   );
