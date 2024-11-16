@@ -6,6 +6,7 @@ const personSchema = new mongoose.Schema({
   birthDate: { type: Date },
   birthPlace: { type: String },
   currentAddress: { type: String },
+  isDead: { type: Boolean, required: true, default: false },
   deathDate: { type: Date },
   deathPlace: { type: String },
   origin: { type: mongoose.Schema.Types.ObjectId, ref: "Relationship" },

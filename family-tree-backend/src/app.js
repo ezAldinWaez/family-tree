@@ -3,6 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const personRoutes = require("./routes/personRoutes");
 const relationshipRoutes = require("./routes/relationshipRoutes");
+const apiRoutes = require("./routes/apiRoutes")
 
 require("dotenv").config();
 
@@ -18,5 +19,7 @@ mongoose
 
 app.use("/person", personRoutes);
 app.use("/relationship", relationshipRoutes);
+app.use("/api", apiRoutes);
+
 
 module.exports = app;
