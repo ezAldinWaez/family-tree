@@ -1,0 +1,29 @@
+[  
+    { "id": "15", "name": "Alex", "img": "man", "sex": "male", "born": "none", "rel": "R-5" },  
+    { "id": "14", "name": "Emily", "img": "woman", "sex": "female", "born": "none", "rel": "R-5" },  
+    { "id": "R-5", "F": "15", "M": "14", "children": ["1"] },  
+
+    { "id": "1", "name": "James", "img": "man", "sex": "male", "born": "R-5", "rel": "R-1" },  
+    { "id": "2", "name": "Lily", "img": "woman", "sex": "female", "born": "none", "rel": "R-1" },  
+    { "id": "3", "name": "Sophia", "img": "woman", "sex": "female", "born": "R-1", "rel": "R-2" },  
+    { "id": "4", "name": "Ava", "img": "woman", "sex": "female", "born": "R-1", "rel": "none" },  
+    { "id": "5", "name": "Noah", "img": "man", "sex": "male", "born": "R-1", "rel": "none" },  
+    { "id": "6", "name": "Liam", "img": "man", "sex": "male", "born": "R-1", "rel": "none" },  
+    { "id": "7", "name": "Emma", "img": "woman", "sex": "female", "born": "R-1", "rel": "none" },  
+    { "id": "20", "name": "Mason", "img": "man", "sex": "male", "born": "none", "rel": "R-2" },  
+
+    { "id": "R-1", "F": "1", "M": "2", "children": ["3", "4", "5", "6", "7"] },  
+
+    { "id": "8", "name": "Isabella", "img": "woman", "sex": "female", "born": "R-2", "rel": "none" },  
+    { "id": "9", "name": "Ethan", "img": "man", "sex": "male", "born": "R-2", "rel": "none" },  
+    { "id": "10", "name": "Avery", "img": "woman", "sex": "female", "born": "R-2", "rel": "none" },  
+    { "id": "20", "name": "Logan", "img": "man", "sex": "male", "born": "none", "rel": "R-2" },  
+
+    { "id": "R-2", "F": "20", "M": "3", "children": ["8", "9", "10"] },  
+
+    { "id": "11", "name": "Zoe", "img": "woman", "sex": "female", "born": "R-3", "rel": "none" },  
+    { "id": "12", "name": "Lucas", "img": "man", "sex": "male", "born": "R-3", "rel": "none" },  
+    { "id": "13", "name": "Mia", "img": "woman", "sex": "female", "born": "R-3", "rel": "none" },  
+
+    { "id": "R-3", "F": "21", "M": "8", "children": ["11", "12"] }  
+]

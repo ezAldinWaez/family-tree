@@ -1,283 +1,119 @@
-import React, { useCallback } from 'react';
+import React, { useMemo } from 'react';
 import {
   ReactFlow,
   useNodesState,
   useEdgesState,
-  addEdge,
-  Handle,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import PersonNode from './PersonNode';
-import RelationNode from './RelationNode'; // Import RelationNode
+import PersonNode from './components/PersonNode';
+import RelationNode from './components/RelationNode';
 
-import man from './assets/imgs/man.jpg';
-import woman from './assets/imgs/woman.jpg';
-import son from './assets/imgs/son.jpg';
+import familyData from './assets/DATA.json';
 
+// Function for dynamic positioning
+const getPosition = (index, generation, offset = 0) => ({
+  x: 250 * index + generation * 100 + offset,
+  y: 150 * generation,
+});
 
-const initialNodes = [
-  {
-    id: '1',
-    position: { x: 100, y: 0 },
-    data: { label: 'Node 1', img: man, isAlive: true, name: 'Alzobair'},
-    draggable: false,
-    type: 'custom', // Person node
-    markerStart: null,
-  },
-  {
-    id: '2',
-    position: { x: 200, y: 0 },
-    data: { label: 'Node 2', img: woman, isAlive: true, name: 'Afraa'},
-    draggable: false,
-    type: 'custom', // Person node
-  },
-  {
-    id: 'relationship-1',
-    position: { x: 3 * 55, y: 0 },
-    data: { label: 'Marriage', isContinuance: true },
-    draggable: false,
-    type: 'relation', // Relationship node
-  },
-  {
-    id: '3',
-    position: { x: 0, y: 200 },
-    data: { label: 'Node 3', img: son, isAlive: true, name: 'Fatimah' },
-    draggable: false,
-    type: 'custom', // Person node
-  },
-  {
-    id: '4',
-    position: { x: 75, y: 200 },
-    data: { label: 'Node 4', img: son, isAlive: true, name: 'Shaima\'a' },
-    draggable: false,
-    type: 'custom', // Person node
-  },
-  {
-    id: '5',
-    position: { x: 150, y: 200 },
-    data: { label: 'Node 5', img: son, isAlive: true, name: 'Mohammad' },
-    draggable: false,
-    type: 'custom', // Person node
-  },
-  {
-    id: '6',
-    position: { x: 225, y: 200 },
-    data: { label: 'Node 5', img: son, isAlive: true, name: 'Abdo Allah' },
-    draggable: false,
-    type: 'custom', // Person node
-  },
-  {
-    id: '7',
-    position: { x: 300, y: 200 },
-    data: { label: 'Node 5', img: son, isAlive: true, name: 'Alaa' },
-    draggable: false,
-    type: 'custom', // Person node
-  },
-];
+// Automatically generate nodes and edges for ReactFlow
+const generateGraph = (familyData) => {
+  const nodes = [];
+  const edges = [];
 
-const initialEdges = [
-  { id: 'e1-relationship', source: '1', target: 'relationship-1', type: 'smoothstep'},
-  { id: 'e2-relationship', source: '2', target: 'relationship-1', type: 'smoothstep'},
-  { id: 'relationship-3', source: 'relationship-1', target: '3', type: 'smoothstep' },
-  { id: 'relationship-4', source: 'relationship-1', target: '4', type: 'smoothstep' },
-  { id: 'relationship-5', source: 'relationship-1', target: '5', type: 'smoothstep' },
-  { id: 'relationship-6', source: 'relationship-1', target: '6', type: 'smoothstep' },
-  { id: 'relationship-7', source: 'relationship-1', target: '7', type: 'smoothstep' },
-];
+  // Helper function to add a person node to the graph
+  const addPersonNode = (person, index, generation, offset = 0) => {
+    nodes.push({
+      id: person.id,
+      data: { ...person },
+      position: getPosition(index, generation, offset),
+      type: 'custom',
+    });
+  };
+
+  // Recursive function to build family tree
+  const addFamily = (relId, generation) => {
+    const relation = familyData.find((r) => r.id === relId);
+
+    // Find father and mother for the relationship
+    const father = familyData.find((person) => person.id === relation.F);
+    const mother = familyData.find((person) => person.id === relation.M);
+
+    // Add father and mother nodes with offset to avoid overlapping
+    addPersonNode(father, 0, generation, 0);
+    addPersonNode(mother, 1, generation, 0);
+
+    // Add relationship node (marriage)
+    const relationshipNodeId = `relationship-${relId}`;
+    nodes.push({
+      id: relationshipNodeId,     
+      data: { label: 'Marriage' },
+      position: getPosition(0.5, generation),
+      type: 'relation',
+    });
+
+    // Create edges between parents and the relationship node
+    edges.push({
+      id: `e-${father.id}-${relationshipNodeId}`,
+      source: father.id,
+      target: relationshipNodeId,
+      targetHandle: 'left',
+      type: 'smoothstep',
+    });
+    edges.push({
+      id: `e-${mother.id}-${relationshipNodeId}`,
+      source: mother.id,
+      target: relationshipNodeId,
+      targetHandle: 'right',
+      type: 'smoothstep',
+    });
+
+    // Add children under the relationship node
+    relation.children.forEach((childId, index) => {
+      const child = familyData.find((person) => person.id === childId);
+      const childOffset = child.rel !== 'none' ? 60 : 0; // Offset if the child has a spouse
+      addPersonNode(child, index, generation + 2, childOffset);
+
+      // Connect relationship node to each child
+      edges.push({
+        id: `e-${relationshipNodeId}-${childId}`,
+        source: relationshipNodeId,
+        target: childId,
+        type: 'smoothstep',
+      });
+
+      // Recurse if the child has their own relationship
+      if (child.rel !== 'none') {
+        addFamily(child.rel, generation + 2);
+      }
+    });
+  };
+
+  // Start building the tree from the top-most relationship (e.g., grandparents)
+  addFamily('R-5', 0);
+
+  return { nodes, edges };
+};
 
 export default function App() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
-  );
+  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => generateGraph(familyData), []);
+  const [nodes, setNodes] = useNodesState(initialNodes);
+  const [edges, setEdges] = useEdgesState(initialEdges);
 
   const nodeTypes = {
-    custom: PersonNode, // Person node
-    relation: RelationNode, // Relationship node
+    custom: PersonNode,
+    relation: RelationNode,
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#242424' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={nodeTypes} // Pass both node types
+        nodeTypes={nodeTypes}
+        style={{ background: '#242424' }}
       />
     </div>
   );
 }
-
-// import React, { useCallback } from 'react';
-// import {
-//   ReactFlow,
-//   addEdge,
-//   ConnectionLineType,
-//   Panel,
-//   useNodesState,
-//   useEdgesState,
-// } from '@xyflow/react';
-
-// import dagre from 'dagre';
-// import './index.css';
-// import '@xyflow/react/dist/style.css';
-
-// // Import the images
-// import man from './assets/imgs/man.jpg';
-// import woman from './assets/imgs/woman.jpg';
-// import son from './assets/imgs/son.jpg';
-
-// import PersonNode from './PersonNode';
-// import RelationNode from './RelationNode';
-
-// // Set up Dagre layout settings
-// const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-// const nodeWidth = 50;
-// const nodeHeight = 50;
-
-// // Remove manual positioning of nodes
-// const initialNodes = [
-//   {
-//     id: '1',
-//     data: { label: 'Node 1', img: man, isAlive: true, name: 'Alzobair' },
-//     type: 'custom', // Person node
-//   },
-//   {
-//     id: '2',
-//     data: { label: 'Node 2', img: woman, isAlive: true, name: 'Afraa' },
-//     type: 'custom', // Person node
-//   },
-//   {
-//     id: 'relationship-1',
-//     data: { label: 'Marriage', isContinuance: false },
-//     type: 'relation', // Relationship node
-//   },
-//   {
-//     id: '3',
-//     data: { label: 'Node 3', img: son, isAlive: true, name: 'Fatimah' },
-//     type: 'custom', // Person node
-//   },
-//   {
-//     id: '4',
-//     data: { label: 'Node 4', img: son, isAlive: true, name: 'Shaima\'a' },
-//     type: 'custom', // Person node
-//   },
-//   {
-//     id: '5',
-//     data: { label: 'Node 5', img: son, isAlive: true, name: 'Mohammad' },
-//     type: 'custom', // Person node
-//   },
-//   {
-//     id: '6',
-//     data: { label: 'Node 6', img: son, isAlive: true, name: 'Abdo Allah' },
-//     type: 'custom', // Person node
-//   },
-//   {
-//     id: '7',
-//     data: { label: 'Node 7', img: son, isAlive: true, name: 'Alaa' },
-//     type: 'custom', // Person node
-//   },
-// ];
-
-// const initialEdges = [
-//   { id: 'e1-relationship', source: '1', target: 'relationship-1', type: 'smoothstep' },
-//   { id: 'e2-relationship', source: '2', target: 'relationship-1', type: 'smoothstep' },
-//   { id: 'relationship-3', source: 'relationship-1', target: '3', type: 'smoothstep' },
-//   { id: 'relationship-4', source: 'relationship-1', target: '4', type: 'smoothstep' },
-//   { id: 'relationship-5', source: 'relationship-1', target: '5', type: 'smoothstep' },
-//   { id: 'relationship-6', source: 'relationship-1', target: '6', type: 'smoothstep' },
-//   { id: 'relationship-7', source: 'relationship-1', target: '7', type: 'smoothstep' },
-// ];
-
-// const getLayoutedElements = (nodes, edges, direction = 'TB') => {
-//   const isHorizontal = direction === 'LR';
-//   dagreGraph.setGraph({ rankdir: direction });
-
-//   nodes.forEach((node) => {
-//     dagreGraph.setNode(node.id, { width: `${nodeWidth}`, height: `${nodeHeight}` });
-//   });
-
-//   edges.forEach((edge) => {
-//     dagreGraph.setEdge(edge.source, edge.target);
-//   });
-
-//   dagre.layout(dagreGraph);
-
-//   const newNodes = nodes.map((node) => {
-//     const nodeWithPosition = dagreGraph.node(node.id);
-//     const newNode = {
-//       ...node,
-//       targetPosition: isHorizontal ? 'left' : 'top',
-//       sourcePosition: isHorizontal ? 'right' : 'bottom',
-//       position: {
-//         x: nodeWithPosition.x - nodeWidth / 2,
-//         y: nodeWithPosition.y - nodeHeight / 2,
-//       },
-//     };
-
-//     return newNode;
-//   });
-
-//   return { nodes: newNodes, edges };
-// };
-
-// const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-//   initialNodes,
-//   initialEdges,
-// );
-
-// export default function App() {
-//   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
-//   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
-
-//   const onConnect = useCallback(
-//     (params) =>
-//       setEdges((eds) =>
-//         addEdge(
-//           { ...params, type: ConnectionLineType.SmoothStep, animated: true },
-//           eds,
-//         ),
-//       ),
-//     [],
-//   );
-
-//   const nodeTypes = {
-//     custom: PersonNode,
-//     relation: RelationNode,
-//   };
-
-//   const onLayout = useCallback(
-//     (direction) => {
-//       const { nodes: layoutedNodes, edges: layoutedEdges } =
-//         getLayoutedElements(nodes, edges, direction);
-
-//       setNodes([...layoutedNodes]);
-//       setEdges([...layoutedEdges]);
-//     },
-//     [nodes, edges],
-//   );
-
-//   return (
-//     <ReactFlow
-//       nodes={nodes}
-//       edges={edges}
-//       onNodesChange={onNodesChange}
-//       onEdgesChange={onEdgesChange}
-//       onConnect={onConnect}
-//       nodeTypes={nodeTypes} // Add nodeTypes to ReactFlow
-//       connectionLineType={ConnectionLineType.SmoothStep}
-//       fitView
-//     >
-//       <Panel position="top-right">
-//         <button onClick={() => onLayout('TB')}>vertical layout</button>
-//         <button onClick={() => onLayout('LR')}>horizontal layout</button>
-//       </Panel>
-//     </ReactFlow>
-//   );
-// };
