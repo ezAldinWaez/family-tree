@@ -3,15 +3,23 @@ const mongoose = require("mongoose");
 const personSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   sex: { type: String, enum: ["male", "female"], required: true },
-  birthDate: { type: Date },
-  birthPlace: { type: String },
-  currentAddress: { type: String },
+  birth: {
+    date: { type: Date },
+    place: { type: String },
+  },
   isDead: { type: Boolean, required: true, default: false },
-  deathDate: { type: Date },
-  deathPlace: { type: String },
-  origin: { type: mongoose.Schema.Types.ObjectId, ref: "Relationship" },
+  death: {
+    date: { type: Date },
+    place: { type: String },
+  },
+  contact: {
+    currentAddress: { type: String },
+    email: { type: String },
+    phone: { type: String }
+  },
+  origin: { type: mongoose.Schema.Types.ObjectId, ref: "Relationship", index: true },
   relationships: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Relationship" },
+    { type: mongoose.Schema.Types.ObjectId, ref: "Relationship", index: true },
   ],
 }, { timestamps: true });
 
