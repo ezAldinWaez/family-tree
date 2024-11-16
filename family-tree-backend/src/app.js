@@ -1,8 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const personRoutes = require("./routes/personRoutes");
-const relationshipRoutes = require("./routes/relationshipRoutes");
 const apiRoutes = require("./routes/apiRoutes")
 
 require("dotenv").config();
@@ -17,8 +15,6 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-app.use("/person", personRoutes);
-app.use("/relationship", relationshipRoutes);
 app.use("/api", apiRoutes);
 
 

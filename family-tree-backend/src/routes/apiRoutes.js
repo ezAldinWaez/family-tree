@@ -5,8 +5,8 @@ const router = express.Router();
 const Person = require("../models/Person");
 const Relationship = require("../models/Relationship");
 
-const ValidateSuposeData = requier("../middlewares/ValidateSuposeData")
-const validateChildData = requier("../middlewares/ValidateChildData")
+const ValidateSuposeData = require("../middlewares/ValidateSuposeData")
+const validateChildData = require("../middlewares/ValidateChildData")
 
 // Helper function to extract year from date
 const getYear = (date) => date ? new Date(date).getFullYear() : null;
