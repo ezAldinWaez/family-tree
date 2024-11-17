@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
+const { SEX } = require("../config/constants");
 
 const personSchema = new mongoose.Schema(
   {
     fullName: { type: String, required: true },
-    sex: { type: String, enum: ["male", "female"], required: true },
+    sex: { type: String, enum: Object.values(SEX), required: true },
     birth: {
       date: { type: Date },
       place: { type: String },
@@ -14,7 +15,7 @@ const personSchema = new mongoose.Schema(
       place: { type: String },
     },
     contact: {
-      currentAddress: { type: String },
+      address: { type: String },
       email: { type: String },
       phone: { type: String },
     },

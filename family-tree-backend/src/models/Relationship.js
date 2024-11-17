@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { RELATIONSHIP_STATE } = require("../config/constants");
 
 const relationshipSchema = new mongoose.Schema(
   {
@@ -16,11 +17,13 @@ const relationshipSchema = new mongoose.Schema(
     },
     state: {
       type: String,
-      enum: ["married", "divorced", "widowed"],
-      default: "married",
+      enum: Object.values(RELATIONSHIP_STATE),
+      default: RELATIONSHIP_STATE.MARRIED,
     },
-    marriageStartDate: { type: Date },
-    marriageEndDate: { type: Date },
+    marriageInfo: {
+      startDate: { type: Date },
+      endDate: { type: Date },
+    },
     children: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Person", index: true },
     ],
