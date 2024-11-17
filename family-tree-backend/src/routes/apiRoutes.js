@@ -7,6 +7,7 @@ const Relationship = require("../models/Relationship");
 
 const ValidateSuposeData = require("../middlewares/ValidateSuposeData");
 const validateChildData = require("../middlewares/ValidateChildData");
+const validateInitialFamilyData = require("../middlewares/validateInitialFamilyData");
 
 // Helper function to extract year from date
 const getYear = (date) => (date ? new Date(date).getFullYear() : null);
@@ -163,6 +164,132 @@ router.get("/person/:personId", async (req, res) => {
     });
   }
 });
+
+
+// POST /api/tree
+router.post('/tree', validateInitialFamilyData, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+      // First, check if there's any existing data in the database
+      const existingCount = await Person.countDocuments();
+      if (existingCount > 0) {
+          return res.status(409).json({
+              success: false,
+              error: 'Family tree already initialized. Cannot create multiple root families.'
+          });
+      }
+
+      const { grandFather: gfData, grandMother: gmData, relationship: relData } = req.body;
+
+      // Create grandfather
+      const grandfather = new Person({
+          fullName: gfData.fullName,
+          sex: 'male',
+          birth: gfData.birth,
+          isDead: gfData.isDead || false,
+          death: gfData.death,
+          contact: gfData.contact,
+          photoUrl: gfData.photoUrl
+      });
+      await grandfather.save({ session });
+
+      // Create grandmother
+      const grandmother = new Person({
+          fullName: gmData.fullName,
+          sex: 'female',
+          birth: gmData.birth,
+          isDead: gmData.isDead || false,
+          death: gmData.death,
+          contact: gmData.contact,
+          photoUrl: gmData.photoUrl
+      });
+      await grandmother.save({ session });
+
+      // Create their relationship
+      const relationship = new Relationship({
+          husb: grandfather._id,
+          wife: grandmother._id,
+          state: relData.state || 'married',
+          marriageStartDate: relData.marriageStartDate,
+          marriagePlace: relData.marriagePlace,
+          children: []
+      });
+      await relationship.save({ session });
+
+      // Update both persons with the relationship
+      grandfather.relationships = [relationship._id];
+      grandmother.relationships = [relationship._id];
+      await Promise.all([
+          grandfather.save({ session }),
+          grandmother.save({ session })
+      ]);
+
+      // Commit the transaction
+      await session.commitTransaction();
+
+      // Return response with tree information and guidance
+      return res.status(201).json({
+          success: true,
+          message: 'Family tree initialized successfully',
+          data: {
+              treeInfo: {
+                  rootRelationship: {
+                      id: relationship._id,
+                      marriageDate: relationship.marriageStartDate,
+                      state: relationship.state
+                  },
+                  grandFather: {
+                      id: grandfather._id,
+                      fullName: grandfather.fullName
+                  },
+                  grandMother: {
+                      id: grandmother._id,
+                      fullName: grandmother.fullName
+                  }
+              },
+              nextSteps: {
+                  addChild: {
+                      endpoint: '/api/child',
+                      method: 'POST',
+                      description: 'Add children to this relationship'
+                  },
+                  viewTree: {
+                      endpoint: '/api/tree',
+                      method: 'GET',
+                      description: 'View the entire family tree'
+                  },
+                  viewPerson: {
+                      endpoint: `/api/person/${grandfather._id}`,
+                      method: 'GET',
+                      description: 'View detailed information about any family member'
+                  }
+              }
+          }
+      });
+
+  } catch (error) {
+      await session.abortTransaction();
+      console.error('Error initializing family tree:', error);
+      
+      if (error.name === 'ValidationError') {
+          return res.status(400).json({
+              success: false,
+              error: 'Validation error',
+              details: Object.values(error.errors).map(err => err.message)
+          });
+      }
+
+      return res.status(500).json({
+          success: false,
+          error: 'Failed to initialize family tree'
+      });
+  } finally {
+      session.endSession();
+  }
+});
+
 
 // POST /api/spouse
 router.post("/spouse", ValidateSuposeData, async (req, res) => {
